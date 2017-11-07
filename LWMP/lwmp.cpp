@@ -19,6 +19,8 @@ LWMP::LWMP(QWidget *parent) : QWidget(parent) {
 
 	qApp->addLibraryPath("/platforms");
 
+	srand(time(NULL));
+
 	ui.setupUi(this);
 
 	// assinging layout because the Qt designer does not
@@ -138,9 +140,7 @@ void LWMP::previous_title() {
 void LWMP::next_title() {
 	if(!ui.m_cbShuffle->isChecked())
 		ui.m_lwTitleList->setCurrentRow(ui.m_lwTitleList->currentRow() + 1);
-	else {
-		srand(time(NULL));
-		
+	else {		
 		ui.m_lwTitleList->setCurrentRow(rand() % ui.m_lwTitleList->count());
 	}
 

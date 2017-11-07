@@ -39,6 +39,9 @@ void music_finished() {
 void get_all_files_in_location(paths& v, std::string path) {
 
 	for(auto p : fs::directory_iterator(path)) {
-		v.push_back(p.path().string());
+		if(fs::is_directory(p.path()))
+			get_all_files_in_location(v, p.path().string());
+		else
+			v.push_back(p.path().string());
 	}
 }
