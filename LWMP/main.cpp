@@ -45,3 +45,7 @@ void get_all_files_in_location(paths& v, std::string path) {
 			v.push_back(p.path().string());
 	}
 }
+
+bool flag_checker(int all_flags, int flag_to_check) {
+	return (all_flags & flag_to_check) == flag_to_check;
+}

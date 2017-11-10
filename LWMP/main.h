@@ -16,7 +16,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #pragma once
 
 // SDL
-//#include <SDL.h> // <- not needed
+//#include <SDL.h>
 #include <SDL_mixer.h>
 
 // Qt5.9
@@ -31,9 +31,9 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include <filesystem>
 #include <fstream>
 
+#define stringyfy(x) #x
 #define MIX_ALL MIX_INIT_FLAC | MIX_INIT_FLUIDSYNTH | MIX_INIT_MOD | MIX_INIT_MP3 | MIX_INIT_OGG
 
-// std::vector<std::string>
 using paths = std::vector<std::string>;
 namespace fs = std::experimental::filesystem;
 
@@ -43,4 +43,9 @@ int main(int argc, char *argv[]);
 // will trigger LWMP::next_title()
 void music_finished();
 
+// adds all paths to files in the given path (must be a directory)
+// also adds files in subfolders
 void get_all_files_in_location(paths& v, std::string path);
+
+// for debugging purpose
+bool flag_checker(int, int);

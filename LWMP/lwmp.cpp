@@ -27,7 +27,22 @@ LWMP::LWMP(QWidget *parent) : QWidget(parent) {
 	this->setLayout(ui.gridLayout);
 
 	// init SDL_MIX
-	Mix_Init(MIX_ALL);
+	int inited = Mix_Init(MIX_ALL);		
+
+	if(flag_checker(inited, MIX_INIT_MP3))
+		ui.m_lwInitialised->addItem(stringyfy(MP3));
+
+	if(flag_checker(inited, MIX_INIT_FLAC))
+		ui.m_lwInitialised->addItem(stringyfy(FLAC));
+
+	if(flag_checker(inited, MIX_INIT_FLUIDSYNTH))
+		ui.m_lwInitialised->addItem(stringyfy(FLUIDSYNTH));
+	
+	if(flag_checker(inited, MIX_INIT_MOD))
+		ui.m_lwInitialised->addItem(stringyfy(MOD));
+
+	if(flag_checker(inited, MIX_INIT_OGG))
+		ui.m_lwInitialised->addItem(stringyfy(OGG));
 
 	// open audio channels
 	Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 2048);
@@ -42,7 +57,8 @@ LWMP::LWMP(QWidget *parent) : QWidget(parent) {
 		auto arr = buffer.split('\r');
 
 		for(int i = 0; i < arr.count() - 1; i++) {
-			ui.m_cbFolderList->addItem(arr[i]);
+			if(!arr.isEmpty())
+				ui.m_cbFolderList->addItem(arr[i]);
 		}
 	}
 
@@ -73,7 +89,7 @@ LWMP::~LWMP() {
 
 	f.open("usedlocations", std::ios::out);
 
-	// start at 1 to skip first item
+	// start at 1 to skip first item with is the recently used entry
 	for(size_t i = 1; i < ui.m_cbFolderList->count(); i++) {
 		f << ui.m_cbFolderList->itemText(i).toStdString() << '\r';
 	}
@@ -99,15 +115,19 @@ void LWMP::set_title() {
 	// buffer var because QString.toStdString().c_str() does not work properly for some reason
 	std::string title_path = ui.m_lwTitleList->currentItem()->text().toStdString();
 
-	//this->setWindowTitle(title_path.c_str());
+	// free current audio-stream and set it to null
+	Mix_FreeMusic(m_mixAudio);
+	m_mixAudio = 0;
 
 	m_mixAudio = Mix_LoadMUS(title_path.c_str());
 
-	if(!m_mixAudio)
-		QMessageBox::critical(this, "ERROR", Mix_GetError());
-
-	if(Mix_PlayMusic(this->m_mixAudio, 1) == -1)
-		QMessageBox::critical(this, "ERROR", Mix_GetError());
+	if(!m_mixAudio) {
+		this->next_title();
+	}
+	else {
+		if(Mix_PlayMusic(this->m_mixAudio, 1) == -1)
+			QMessageBox::critical(this, "ERROR", Mix_GetError());
+	}
 }
 
 void LWMP::select_dictionary() {
@@ -122,7 +142,7 @@ void LWMP::change_volume() {
 	Mix_VolumeMusic(ui.m_hsVolume->value());
 
 	ui.m_hsVolume->setToolTip(QString("Volume: ") + std::to_string(ui.m_hsVolume->value()).c_str());
-	ui.m_hsVolume->setToolTipDuration(1000);
+	ui.m_hsVolume->setToolTipDuration(3000);
 }
 
 void LWMP::play() {
@@ -138,8 +158,9 @@ void LWMP::previous_title() {
 }
 
 void LWMP::next_title() {
-	if(!ui.m_cbShuffle->isChecked())
+	if(!ui.m_cbShuffle->isChecked()) {
 		ui.m_lwTitleList->setCurrentRow(ui.m_lwTitleList->currentRow() + 1);
+	}
 	else {		
 		ui.m_lwTitleList->setCurrentRow(rand() % ui.m_lwTitleList->count());
 	}
