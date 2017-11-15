@@ -17,7 +17,6 @@
 #include <QtWidgets/QComboBox>
 #include <QtWidgets/QGridLayout>
 #include <QtWidgets/QHeaderView>
-#include <QtWidgets/QLabel>
 #include <QtWidgets/QListWidget>
 #include <QtWidgets/QPushButton>
 #include <QtWidgets/QSlider>
@@ -37,9 +36,7 @@ public:
     QComboBox *m_cbFolderList;
     QSlider *m_hsVolume;
     QCheckBox *m_cbShuffle;
-    QLabel *m_lblInitialised;
     QListWidget *m_lwTitleList;
-    QListWidget *m_lwInitialised;
 
     void setupUi(QWidget *LWMPClass)
     {
@@ -54,7 +51,7 @@ public:
         gridLayout->setSpacing(6);
         gridLayout->setContentsMargins(11, 11, 11, 11);
         gridLayout->setObjectName(QStringLiteral("gridLayout"));
-        gridLayout->setContentsMargins(0, 0, 0, 0);
+        gridLayout->setContentsMargins(5, 5, 5, 5);
         m_btnSelectFolder = new QPushButton(gridLayoutWidget);
         m_btnSelectFolder->setObjectName(QStringLiteral("m_btnSelectFolder"));
         QSizePolicy sizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
@@ -117,25 +114,10 @@ public:
 
         gridLayout->addWidget(m_cbShuffle, 3, 0, 1, 1);
 
-        m_lblInitialised = new QLabel(gridLayoutWidget);
-        m_lblInitialised->setObjectName(QStringLiteral("m_lblInitialised"));
-
-        gridLayout->addWidget(m_lblInitialised, 1, 5, 1, 1);
-
         m_lwTitleList = new QListWidget(gridLayoutWidget);
         m_lwTitleList->setObjectName(QStringLiteral("m_lwTitleList"));
 
         gridLayout->addWidget(m_lwTitleList, 1, 0, 2, 5);
-
-        m_lwInitialised = new QListWidget(gridLayoutWidget);
-        m_lwInitialised->setObjectName(QStringLiteral("m_lwInitialised"));
-        QSizePolicy sizePolicy3(QSizePolicy::Ignored, QSizePolicy::Expanding);
-        sizePolicy3.setHorizontalStretch(0);
-        sizePolicy3.setVerticalStretch(0);
-        sizePolicy3.setHeightForWidth(m_lwInitialised->sizePolicy().hasHeightForWidth());
-        m_lwInitialised->setSizePolicy(sizePolicy3);
-
-        gridLayout->addWidget(m_lwInitialised, 2, 5, 1, 1);
 
 
         retranslateUi(LWMPClass);
@@ -157,7 +139,6 @@ public:
         m_hsVolume->setToolTip(QApplication::translate("LWMPClass", "volume: 100", Q_NULLPTR));
 #endif // QT_NO_TOOLTIP
         m_cbShuffle->setText(QApplication::translate("LWMPClass", "shuffle", Q_NULLPTR));
-        m_lblInitialised->setText(QApplication::translate("LWMPClass", "Initialsed", Q_NULLPTR));
     } // retranslateUi
 
 };

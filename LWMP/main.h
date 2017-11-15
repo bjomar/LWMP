@@ -20,10 +20,14 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include <SDL_mixer.h>
 
 // Qt5.9
+#include <QtWinExtras\qwinthumbnailtoolbar.h>
+#include <QtWinExtras\qwinthumbnailtoolbutton.h>
 #include <qapplication.h>
 #include <qfiledialog.h>
 #include <qmessagebox.h>
 #include <qfile.h>
+#include <qmediaplayer.h>
+#include <qmediaplaylist.h>
 
 // std
 #include <vector>
@@ -39,7 +43,7 @@ namespace fs = std::experimental::filesystem;
 
 int main(int argc, char *argv[]);
 
-// hook funktion for Mix_HookMusicFinished
+// hook function for Mix_HookMusicFinished
 // will trigger LWMP::next_title()
 void music_finished();
 

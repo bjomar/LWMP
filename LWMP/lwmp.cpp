@@ -15,7 +15,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "lwmp.h"
 
-LWMP::LWMP(QWidget *parent) : QWidget(parent) {
+LWMP::LWMP(QWidget *parent) : QWidget(parent), m_mpMediaPlayer(this) {
 
 	qApp->addLibraryPath("/platforms");
 
@@ -23,8 +23,35 @@ LWMP::LWMP(QWidget *parent) : QWidget(parent) {
 
 	ui.setupUi(this);
 
+	// thumbnail buttons - not working right now
+	/*
+	// create thumbnail toolbar and assign handle
+	m_ttbThumbnailToolbar = new QWinThumbnailToolBar(this);
+	m_ttbThumbnailToolbar->setWindow(this->windowHandle());
+
+	// create thumbnail tool buttons
+	m_ttbtnNext = new QWinThumbnailToolButton(m_ttbThumbnailToolbar);
+	m_ttbtnPause = new QWinThumbnailToolButton(m_ttbThumbnailToolbar);
+	m_ttbtnPrevious = new QWinThumbnailToolButton(m_ttbThumbnailToolbar);
+
+	// set tooltip and icon
+	m_ttbtnNext->setToolTip("NEXT");
+	m_ttbtnNext->setIcon(QIcon("next.ico"));
+	m_ttbtnPause->setToolTip("PAUSE");
+	m_ttbtnPause->setIcon(QIcon("playpause.png"));
+	m_ttbtnPrevious->setToolTip("PREV");
+	m_ttbtnPrevious->setIcon(QIcon("prev.ico"));
+
+	// add to thumbnail toolbar
+	m_ttbThumbnailToolbar->addButton(m_ttbtnPrevious);
+	m_ttbThumbnailToolbar->addButton(m_ttbtnPause);
+	m_ttbThumbnailToolbar->addButton(m_ttbtnNext);
+	*/
+
 	// assinging layout because the Qt designer does not
 	this->setLayout(ui.gridLayout);
+
+#ifdef USE_SDL_MIXER
 
 	// init SDL_MIX
 	int inited = Mix_Init(MIX_ALL);		
@@ -47,6 +74,8 @@ LWMP::LWMP(QWidget *parent) : QWidget(parent) {
 	// open audio channels
 	Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 2048);
 
+#endif // USE_SDL_MIXER
+
 	ui.m_cbFolderList->addItem("recently used");
 
 	QFile f;
@@ -63,7 +92,7 @@ LWMP::LWMP(QWidget *parent) : QWidget(parent) {
 	}
 
 #pragma region event connections
-
+	
 	this->connect(ui.m_btnSelectFolder, &QPushButton::clicked, this, &LWMP::select_dictionary);
 
 	this->connect(ui.m_lwTitleList, &QListWidget::itemDoubleClicked, this, &LWMP::set_title);
@@ -78,7 +107,23 @@ LWMP::LWMP(QWidget *parent) : QWidget(parent) {
 
 	this->connect(ui.m_cbFolderList, &QComboBox::currentTextChanged, this, &LWMP::update_titlelist);
 
+	this->connect(&this->m_mpMediaPlayer, &QMediaPlayer::mediaStatusChanged, this, &LWMP::media_state_changed_event);
+
+	// thumbnail connections
+	/*
+	this->connect(m_ttbtnPause, &QWinThumbnailToolButton::clicked, this, &LWMP::play);
+
+	this->connect(m_ttbtnNext, &QWinThumbnailToolButton::clicked, this, &LWMP::next_title);
+
+	this->connect(m_ttbtnPrevious, &QWinThumbnailToolButton::clicked, this, &LWMP::previous_title);
+	*/
+
+#ifdef USE_SDL_MIXER
+
+	// SDL connections
 	Mix_HookMusicFinished(&music_finished);
+
+#endif // USE_SDL_MIXER 
 
 #pragma endregion
 }
@@ -96,7 +141,17 @@ LWMP::~LWMP() {
 
 	f.close();
 
+	/*
+	delete m_ttbThumbnailToolbar;
+	delete m_ttbtnNext;
+	delete m_ttbtnPause;
+	delete m_ttbtnPrevious;*/
+
+#ifdef USE_SDL_MIXER
+
 	delete m_mixAudio;
+
+#endif // USE_SDL_MIXER
 }
 
 void LWMP::update_titlelist() {
@@ -112,6 +167,9 @@ void LWMP::update_titlelist() {
 }
 
 void LWMP::set_title() {
+
+#ifdef USE_SDL_MIXER
+
 	// buffer var because QString.toStdString().c_str() does not work properly for some reason
 	std::string title_path = ui.m_lwTitleList->currentItem()->text().toStdString();
 
@@ -128,6 +186,16 @@ void LWMP::set_title() {
 		if(Mix_PlayMusic(this->m_mixAudio, 1) == -1)
 			QMessageBox::critical(this, "ERROR", Mix_GetError());
 	}
+
+#else
+
+	if(this->m_mpMediaPlayer.state() == QMediaPlayer::State::PlayingState)
+		this->m_mpMediaPlayer.stop();
+
+	this->m_mpMediaPlayer.setMedia(QUrl::fromLocalFile(ui.m_lwTitleList->currentItem()->text()));
+	this->m_mpMediaPlayer.play();
+
+#endif // USE_SDL_MIXER
 }
 
 void LWMP::select_dictionary() {
@@ -139,17 +207,43 @@ void LWMP::select_dictionary() {
 }
 
 void LWMP::change_volume() {
+
+#ifdef USE_SDL_MIXER
+
 	Mix_VolumeMusic(ui.m_hsVolume->value());
 
+#else
+
+	this->m_mpMediaPlayer.setVolume(ui.m_hsVolume->value());
+
+#endif // USE_SDL_MIXER
 	ui.m_hsVolume->setToolTip(QString("Volume: ") + std::to_string(ui.m_hsVolume->value()).c_str());
 	ui.m_hsVolume->setToolTipDuration(3000);
 }
 
+void LWMP::media_state_changed_event(QMediaPlayer::MediaStatus newState) {
+
+	if(newState == QMediaPlayer::MediaStatus::EndOfMedia)
+		this->next_title();
+}
+
 void LWMP::play() {
+
+#ifdef USE_SDL_MIXER
+
 	if(Mix_PausedMusic())
 		Mix_ResumeMusic();
 	else
 		Mix_PauseMusic();
+
+#else
+
+	if(this->m_mpMediaPlayer.state() == QMediaPlayer::State::PlayingState)
+		this->m_mpMediaPlayer.pause();
+	else
+		this->m_mpMediaPlayer.play();
+
+#endif // USE_SDL_MIXER
 }
 
 void LWMP::previous_title() {

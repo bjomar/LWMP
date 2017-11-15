@@ -15,6 +15,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #pragma once
 
+//#define USE_SDL_MIXER
+
 #include "main.h"
 
 #include <QtWidgets/QWidget>
@@ -45,6 +47,8 @@ private:
 	// called when ui.m_hsVolume::valueChanged is emitted
 	void change_volume();
 	
+	void media_state_changed_event(QMediaPlayer::MediaStatus newState);
+
 public:
 	//pasues or resumes the music
 	void play();
@@ -58,7 +62,24 @@ private:
 	//user interface class
 	Ui::LWMPClass ui;
 
-	Mix_Music* m_mixAudio;
+	/*
+	// instance to manipulate the thumbnail
+	QWinThumbnailToolBar *m_ttbThumbnailToolbar;
+	//thumbnail buttons
+	QWinThumbnailToolButton *m_ttbtnNext;
+	QWinThumbnailToolButton *m_ttbtnPause;
+	QWinThumbnailToolButton *m_ttbtnPrevious;
+	*/
+
+#ifdef USE_SDL_MIXER
+
+	Mix_Music *m_mixAudio;
+
+#else
+
+	QMediaPlayer m_mpMediaPlayer;
+
+#endif // USE_SDL_MIXER
 
 	//path to current directory
 	QString m_qsCurrentDir;
