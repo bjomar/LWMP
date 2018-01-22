@@ -17,13 +17,11 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 LWMP::LWMP(QWidget *parent) : QWidget(parent), m_mpMediaPlayer(this) {
 
-	qApp->addLibraryPath("/platforms");
-
 	srand(time(NULL));
 
 	ui.setupUi(this);
 
-	// thumbnail buttons - not working right now
+	// thumbnail buttons - not working
 	/*
 	// create thumbnail toolbar and assign handle
 	m_ttbThumbnailToolbar = new QWinThumbnailToolBar(this);
@@ -93,28 +91,19 @@ LWMP::LWMP(QWidget *parent) : QWidget(parent), m_mpMediaPlayer(this) {
 
 #pragma region event connections
 	
-	this->connect(ui.m_btnSelectFolder, &QPushButton::clicked, this, &LWMP::select_dictionary);
-
-	this->connect(ui.m_lwTitleList, &QListWidget::itemDoubleClicked, this, &LWMP::set_title);
-
-	this->connect(ui.m_hsVolume, &QSlider::valueChanged, this, &LWMP::change_volume);
-
-	this->connect(ui.m_btnStartStopResume, &QPushButton::clicked, this, &LWMP::play);
-
-	this->connect(ui.m_btnNext, &QPushButton::clicked, this, &LWMP::next_title);
-
-	this->connect(ui.m_btnPrevious, &QPushButton::clicked, this, &LWMP::previous_title);
-
-	this->connect(ui.m_cbFolderList, &QComboBox::currentTextChanged, this, &LWMP::update_titlelist);
-
+	this->connect(this->ui.m_btnSelectFolder, &QPushButton::clicked, this, &LWMP::select_dictionary);
+	this->connect(this->ui.m_lwTitleList, &QListWidget::itemDoubleClicked, this, &LWMP::set_title);
+	this->connect(this->ui.m_hsVolume, &QSlider::valueChanged, this, &LWMP::change_volume);
+	this->connect(this->ui.m_btnStartStopResume, &QPushButton::clicked, this, &LWMP::play);
+	this->connect(this->ui.m_btnNext, &QPushButton::clicked, this, &LWMP::next_title);
+	this->connect(this->ui.m_btnPrevious, &QPushButton::clicked, this, &LWMP::previous_title);
+	this->connect(this->ui.m_cbFolderList, &QComboBox::currentTextChanged, this, &LWMP::update_titlelist);
 	this->connect(&this->m_mpMediaPlayer, &QMediaPlayer::mediaStatusChanged, this, &LWMP::media_state_changed_event);
 
 	// thumbnail connections
 	/*
 	this->connect(m_ttbtnPause, &QWinThumbnailToolButton::clicked, this, &LWMP::play);
-
 	this->connect(m_ttbtnNext, &QWinThumbnailToolButton::clicked, this, &LWMP::next_title);
-
 	this->connect(m_ttbtnPrevious, &QWinThumbnailToolButton::clicked, this, &LWMP::previous_title);
 	*/
 
@@ -155,6 +144,8 @@ LWMP::~LWMP() {
 }
 
 void LWMP::update_titlelist() {
+
+	ui.m_lwTitleList->clear();
 
 	m_qsCurrentDir = ui.m_cbFolderList->currentText();
 
@@ -253,7 +244,7 @@ void LWMP::previous_title() {
 
 void LWMP::next_title() {
 	if(!ui.m_cbShuffle->isChecked()) {
-		ui.m_lwTitleList->setCurrentRow(ui.m_lwTitleList->currentRow() + 1);
+		ui.m_lwTitleList->setCurrentRow((ui.m_lwTitleList->currentRow() + 1) % ui.m_lwTitleList->count());
 	}
 	else {		
 		ui.m_lwTitleList->setCurrentRow(rand() % ui.m_lwTitleList->count());

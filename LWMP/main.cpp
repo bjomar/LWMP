@@ -23,6 +23,8 @@ int main(int argc, char *argv[])
 {
 	QApplication a(argc, argv);
 
+	qApp->addLibraryPath("/platforms");
+
 	LWMP w;
 
 	music_player = &w;

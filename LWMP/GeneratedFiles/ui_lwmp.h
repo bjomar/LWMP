@@ -111,13 +111,15 @@ public:
 
         m_cbShuffle = new QCheckBox(gridLayoutWidget);
         m_cbShuffle->setObjectName(QStringLiteral("m_cbShuffle"));
+        sizePolicy2.setHeightForWidth(m_cbShuffle->sizePolicy().hasHeightForWidth());
+        m_cbShuffle->setSizePolicy(sizePolicy2);
 
         gridLayout->addWidget(m_cbShuffle, 3, 0, 1, 1);
 
         m_lwTitleList = new QListWidget(gridLayoutWidget);
         m_lwTitleList->setObjectName(QStringLiteral("m_lwTitleList"));
 
-        gridLayout->addWidget(m_lwTitleList, 1, 0, 2, 5);
+        gridLayout->addWidget(m_lwTitleList, 1, 0, 2, 6);
 
 
         retranslateUi(LWMPClass);
