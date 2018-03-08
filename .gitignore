@@ -302,3 +302,4 @@ $RECYCLE.BIN/
 # Windows shortcuts
 *.lnk
 LWMP/usedlocations
+LWMP/info.txt
