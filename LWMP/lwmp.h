@@ -31,6 +31,7 @@ public:
 	~LWMP();
 
 private:
+	// updates title list on changed path entry in the selection combo box
 	void update_titlelist();
 
 #pragma region slot funktion for UI interaction events
@@ -62,13 +63,14 @@ private:
 	//user interface class
 	Ui::LWMPClass ui;
 
-	/*
-	// instance to manipulate the thumbnail
-	QWinThumbnailToolBar *m_ttbThumbnailToolbar;
-	//thumbnail buttons
-	QWinThumbnailToolButton *m_ttbtnNext;
-	QWinThumbnailToolButton *m_ttbtnPause;
-	QWinThumbnailToolButton *m_ttbtnPrevious;
+	// thumbnail buttons
+	/* 
+	*	// instance to manipulate the thumbnail
+	*	QWinThumbnailToolBar *m_ttbThumbnailToolbar;
+	*	//thumbnail buttons
+	*	QWinThumbnailToolButton *m_ttbtnNext;
+	*	QWinThumbnailToolButton *m_ttbtnPause;
+	*	QWinThumbnailToolButton *m_ttbtnPrevious;
 	*/
 
 #ifdef USE_SDL_MIXER
@@ -80,10 +82,4 @@ private:
 	QMediaPlayer m_mpMediaPlayer;
 
 #endif // USE_SDL_MIXER
-
-	//path to current directory
-	QString m_qsCurrentDir;
-
-	//paths to all files in m_qsCurrentDir
-	paths m_pTitles;
 };

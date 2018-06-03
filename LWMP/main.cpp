@@ -17,7 +17,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 // some cheating for the music_finished hook function
 // i'm really sorry.
-LWMP* music_player;
+LWMP* music_player = nullptr;
 
 int main(int argc, char *argv[])
 {
@@ -27,7 +27,11 @@ int main(int argc, char *argv[])
 
 	LWMP w;
 
+#ifdef USE_SDL_MIXER
+
 	music_player = &w;
+
+#endif // USE_SDL_MIXER
 
 	w.show();
 

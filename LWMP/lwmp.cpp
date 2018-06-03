@@ -17,9 +17,15 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 LWMP::LWMP(QWidget *parent) : QWidget(parent), m_mpMediaPlayer(this) {
 
+	// not the best randomizer, maybe ill make a mersenne twister some day and add it into here
 	srand(time(NULL));
 
 	ui.setupUi(this);
+
+	ui.m_lwTitleList->setDragDropMode(QAbstractItemView::DragDropMode::DragOnly);
+	ui.m_lwTitleList->setDefaultDropAction(Qt::DropAction::MoveAction);
+	ui.m_lwPlaylist->setDragDropMode(QAbstractItemView::DragDropMode::DropOnly);
+	ui.m_lwPlaylist->setDefaultDropAction(Qt::DropAction::MoveAction);
 
 	// thumbnail buttons - not working
 	/*
@@ -74,7 +80,7 @@ LWMP::LWMP(QWidget *parent) : QWidget(parent), m_mpMediaPlayer(this) {
 
 #endif // USE_SDL_MIXER
 
-	ui.m_cbFolderList->addItem("recently used");
+	ui.m_cbFolderList->addItem("select folder");
 
 	QFile f;
 	f.setFileName("usedlocations");
@@ -83,6 +89,7 @@ LWMP::LWMP(QWidget *parent) : QWidget(parent), m_mpMediaPlayer(this) {
 		QString buffer = f.readAll();
 		auto arr = buffer.split('\r');
 
+		// ignore last split because its an empty line duo to the saving mechanic (it's stupid but works and does it's job)
 		for(int i = 0; i < arr.count() - 1; i++) {
 			if(!arr.isEmpty())
 				ui.m_cbFolderList->addItem(arr[i]);
@@ -91,16 +98,23 @@ LWMP::LWMP(QWidget *parent) : QWidget(parent), m_mpMediaPlayer(this) {
 
 #pragma region event connections
 	
+	// I'm not sure why the clear call works here but not in LWMP::update_titlelist
+	// so i added this workaround
+	this->connect(this->ui.m_btnClearTitleList, &QPushButton::clicked, this, [=]() {
+		this->ui.m_lwTitleList->clear();
+	});
+
 	this->connect(this->ui.m_btnSelectFolder, &QPushButton::clicked, this, &LWMP::select_dictionary);
-	this->connect(this->ui.m_lwTitleList, &QListWidget::itemDoubleClicked, this, &LWMP::set_title);
-	this->connect(this->ui.m_hsVolume, &QSlider::valueChanged, this, &LWMP::change_volume);
 	this->connect(this->ui.m_btnStartStopResume, &QPushButton::clicked, this, &LWMP::play);
 	this->connect(this->ui.m_btnNext, &QPushButton::clicked, this, &LWMP::next_title);
 	this->connect(this->ui.m_btnPrevious, &QPushButton::clicked, this, &LWMP::previous_title);
+	this->connect(this->ui.m_hsVolume, &QSlider::valueChanged, this, &LWMP::change_volume);
+	this->connect(this->ui.m_lwPlaylist, &QListWidget::itemDoubleClicked, this, &LWMP::set_title);
 	this->connect(this->ui.m_cbFolderList, &QComboBox::currentTextChanged, this, &LWMP::update_titlelist);
 	this->connect(&this->m_mpMediaPlayer, &QMediaPlayer::mediaStatusChanged, this, &LWMP::media_state_changed_event);
 
 	// thumbnail connections
+	// these don't seem to work properly with Win 10
 	/*
 	this->connect(m_ttbtnPause, &QWinThumbnailToolButton::clicked, this, &LWMP::play);
 	this->connect(m_ttbtnNext, &QWinThumbnailToolButton::clicked, this, &LWMP::next_title);
@@ -145,15 +159,13 @@ LWMP::~LWMP() {
 
 void LWMP::update_titlelist() {
 
-	ui.m_lwTitleList->clear();
+	paths pTitles;
 
-	m_qsCurrentDir = ui.m_cbFolderList->currentText();
+	auto qsCurrentDir = ui.m_cbFolderList->currentText();
+	get_all_files_in_location(pTitles, qsCurrentDir.toStdString());
 
-	get_all_files_in_location(m_pTitles, m_qsCurrentDir.toStdString());
-
-#pragma omp parallel for
-	for(int i = 0; i < m_pTitles.size(); i++) {
-		ui.m_lwTitleList->addItem(QString::fromStdString(m_pTitles[i]));
+	for(int i = 0; i < pTitles.size(); i++) {
+		ui.m_lwTitleList->addItem(QString::fromStdString(pTitles[i]));
 	}
 }
 
@@ -183,7 +195,7 @@ void LWMP::set_title() {
 	if(this->m_mpMediaPlayer.state() == QMediaPlayer::State::PlayingState)
 		this->m_mpMediaPlayer.stop();
 
-	this->m_mpMediaPlayer.setMedia(QUrl::fromLocalFile(ui.m_lwTitleList->currentItem()->text()));
+	this->m_mpMediaPlayer.setMedia(QUrl::fromLocalFile(ui.m_lwPlaylist->currentItem()->text()));
 	this->m_mpMediaPlayer.play();
 
 #endif // USE_SDL_MIXER
@@ -238,17 +250,16 @@ void LWMP::play() {
 }
 
 void LWMP::previous_title() {
-	ui.m_lwTitleList->setCurrentRow(ui.m_lwTitleList->currentRow() - 1);
+	ui.m_lwPlaylist->setCurrentRow(ui.m_lwPlaylist->currentRow() - 1);
+
 	this->set_title();
 }
 
-void LWMP::next_title() {
-	if(!ui.m_cbShuffle->isChecked()) {
-		ui.m_lwTitleList->setCurrentRow((ui.m_lwTitleList->currentRow() + 1) % ui.m_lwTitleList->count());
-	}
-	else {		
-		ui.m_lwTitleList->setCurrentRow(rand() % ui.m_lwTitleList->count());
-	}
+void LWMP::next_title() {	
+	if(this->ui.m_cbShuffle->isChecked())
+		ui.m_lwPlaylist->setCurrentRow(rand() % this->ui.m_lwPlaylist->count());
+	else 
+		ui.m_lwPlaylist->setCurrentRow((ui.m_lwPlaylist->currentRow() + 1) % ui.m_lwPlaylist->count());
 
 	this->set_title();
 }

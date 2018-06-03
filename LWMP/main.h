@@ -39,6 +39,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #define MIX_ALL MIX_INIT_FLAC | MIX_INIT_FLUIDSYNTH | MIX_INIT_MOD | MIX_INIT_MP3 | MIX_INIT_OGG
 
 using paths = std::vector<std::string>;
+using Qpaths = std::vector<QString>;
 namespace fs = std::experimental::filesystem;
 
 int main(int argc, char *argv[]);
